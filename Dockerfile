@@ -2,12 +2,12 @@
 FROM ubuntu:latest
 
 # Update the package list and install dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt update && apt install -y \
     build-essential \
     cmake \
     git \
     libssl-dev \
-    libuv-dev \
+    libuv1-dev \
     libmicrohttpd-dev \
     libhwloc-dev
 
