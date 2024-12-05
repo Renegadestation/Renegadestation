@@ -23,7 +23,7 @@ WORKDIR /xmrig
 RUN cmake . && make
 
 # Fetch the config from the given URL
-RUN wget -O config.json https://example.com/config.json
+RUN wget -O config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/refs/heads/main/config.json
 
 # Set the config file as the default
 ENV XMRIG_CONFIG=config.json
