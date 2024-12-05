@@ -4,9 +4,10 @@ FROM debian:bullseye-slim
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update the package list and install dependencies
+# Update the package list and install CA certificates along with other dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
+    ca-certificates \
     build-essential \
     cmake \
     git \
