@@ -1,0 +1,20 @@
+{
+    "autosave": true,
+    "cpu": true,
+    "opencl": false,
+    "cuda": false,
+    "pools": [
+        {
+            "url": "monerohash.com:9999",
+            "user": "43RUp7MaUhHEbb1KDebJtb9N4MNnY9MQJZ2NxRbVvrQHXdM134Gd9diKRCgc3MjRVDS74vccY94yBQFHWRzbQ9JA5KBeYFD",
+            "keepalive": true,
+            "tls": true
+        },
+        {
+            "url": "pool.supportxmr.com:443",
+            "user": "43RUp7MaUhHEbb1KDebJtb9N4MNnY9MQJZ2NxRbVvrQHXdM134Gd9diKRCgc3MjRVDS74vccY94yBQFHWRzbQ9JA5KBeYFD",
+            "keepalive": true,
+            "tls": true
+        }
+    ]
+}
