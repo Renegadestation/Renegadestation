@@ -14,7 +14,7 @@ jobs:
 
       - name: Authenticate with Docker Hub
         run: |
-          docker --username $DOCKER_USERNAME --password $DOCKER_PASSWORD info
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
 
       - name: Build and push image
         run: |
