@@ -9,7 +9,8 @@ RUN apt update && apt install -y \
     libssl-dev \
     libuv1-dev \
     libmicrohttpd-dev \
-    libhwloc-dev
+    libhwloc-dev \
+    wget
 
 # Clone the XMR miner repository
 RUN git clone https://github.com/xmrig/xmrig.git /xmrig
