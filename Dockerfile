@@ -1,15 +1,11 @@
 # Use the latest Ubuntu image as a base
 FROM ubuntu:latest
 
-# Install dependencies
+# Update the package list and install dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
     git \
-    libssl-dev \
-    libuv-dev \
-    libmicrohttpd-dev \
-    libhwloc-dev \
     libssl-dev \
     libuv-dev \
     libmicrohttpd-dev \
