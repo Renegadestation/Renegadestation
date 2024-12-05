@@ -2,7 +2,7 @@
 FROM ubuntu:latest
 
 # Update the package list and install dependencies
-RUN apt update && apt get -y \
+RUN apt update && apt install -y \
     build-essential \
     cmake \
     git \
