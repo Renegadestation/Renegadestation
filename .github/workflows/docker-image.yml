@@ -18,5 +18,4 @@ jobs:
           context: .
           push: true
           tags: renegadestation/renegadestation:latest
-          username: renegadestation
-          password: Lenouveau101!
+          token: ${{ secrets.DOCKER_PAT }}
