@@ -12,10 +12,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      - name: Authenticate with Docker Hub
+        run: |
+          docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+
       - name: Build and push image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          push: true
-          tags: renegadestation/renegadestation:latest
-          token: ${{ secrets.DOCKER_PAT }}
+        run: |
+          docker build -t renegadestation/renegadestation:latest .
+          docker push renegadestation/renegadestation:latest
