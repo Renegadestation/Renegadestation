@@ -2,7 +2,7 @@
 FROM ubuntu:latest
 
 # Update the package list and install dependencies
-RUN apt update && apt install -y \
+RUN apt update && apt get -y \
     build-essential \
     cmake \
     git \
@@ -26,4 +26,4 @@ RUN wget -O config.json https://raw.githubusercontent.com/Renegadestation/Renega
 ENV XMRIG_CONFIG=config.json
 
 # Run the XMR miner with root and largepages
-CMD ["sudo", "-u", "root", "xmrig", "--large-pages", "--config", "/xmrig/config.json"]
+CMD ["sudo", "-u", "root", "/xmrig/xmrig", "--large-pages", "--config", "/xmrig/config.json"]
