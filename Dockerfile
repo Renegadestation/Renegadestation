@@ -4,7 +4,7 @@ FROM debian:bullseye-slim
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update the package list and install CA certificates along with other dependencies
+# Update the package list and install dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -27,10 +27,6 @@ RUN git clone https://github.com/xmrig/xmrig.git /xmrig && \
 
 # Fetch the configuration file
 RUN wget -O /xmrig/build/config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/refs/heads/main/config.json
-
-# Enable hugepages (requires extended privileges on the host)
-RUN echo "vm.nr_hugepages=128" > /etc/sysctl.conf && \
-    sysctl -p
 
 # Set XMRig as the entry point
 WORKDIR /xmrig/build
