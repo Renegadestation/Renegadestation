@@ -1,33 +1,39 @@
-# Use a minimal base image with build tools
-FROM debian:bullseye-slim
+# Stage 1: Build XMRig
+FROM debian:bullseye-slim AS builder
 
-# Set environment variables
+# Set non-interactive mode to prevent prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update the package list and install dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ca-certificates \
-    build-essential \
-    cmake \
-    git \
-    wget \
-    libssl-dev \
-    libhwloc-dev \
-    libuv1-dev && \
-    apt-get clean && \
+# Install dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates build-essential cmake git wget \
+    libssl-dev libhwloc-dev libuv1-dev && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone XMRig source and build it
-RUN git clone https://github.com/xmrig/xmrig.git /xmrig && \
-    mkdir /xmrig/build && \
-    cd /xmrig/build && \
-    cmake .. && \
+# Clone and build XMRig
+WORKDIR /xmrig
+RUN git clone --depth=1 https://github.com/xmrig/xmrig.git . && \
+    mkdir build && cd build && \
+    cmake .. -DXMRIG_USE_HUGE_PAGES=ON && \
     make -j$(nproc)
 
-# Fetch the configuration file
-RUN wget -O /xmrig/build/config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/refs/heads/main/config.json
+# Stage 2: Run XMRig in a smaller image
+FROM debian:bullseye-slim
 
-# Set XMRig as the entry point
-WORKDIR /xmrig/build
-ENTRYPOINT ["./xmrig"]
+# Copy compiled XMRig binary from builder stage
+COPY --from=builder /xmrig/build/xmrig /usr/local/bin/xmrig
+
+# Set non-interactive mode
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install only necessary runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates libssl-dev libhwloc-dev libuv1-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+# Fetch the configuration file
+WORKDIR /config
+RUN wget -O config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/refs/heads/main/config.json
+
+# Entrypoint to handle huge pages & MSR dynamically
+ENTRYPOINT ["/bin/sh", "-c", "sysctl -w vm.nr_hugepages=128 2>/dev/null || true && xmrig"]
