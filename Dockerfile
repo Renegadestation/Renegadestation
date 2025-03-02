@@ -28,7 +28,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install only necessary runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates libssl-dev libhwloc-dev libuv1-dev && \
+    ca-certificates libssl-dev libhwloc-dev libuv1-dev wget && \
     rm -rf /var/lib/apt/lists/*
 
 # Fetch the configuration file
