@@ -31,14 +31,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates libssl-dev libhwloc-dev libuv1-dev wget curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Set working directory
-WORKDIR /config
+# Ensure /config directory exists
+RUN mkdir -p /config
 
-# Fetch the configuration file
+# Fetch the configuration file inside the container
 RUN wget -O /config/config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/main/config.json
-
-# Ensure the config file is accessible by XMRig
-COPY /config/config.json /usr/local/bin/config.json
 
 # Entrypoint to start mining with correct config
 ENTRYPOINT ["/bin/sh", "-c", "sysctl -w vm.nr_hugepages=128 2>/dev/null || true && xmrig --config=/config/config.json"]
