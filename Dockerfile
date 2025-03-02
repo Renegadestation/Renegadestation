@@ -6,7 +6,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates build-essential cmake git wget \
+    ca-certificates build-essential cmake git wget curl \
     libssl-dev libhwloc-dev libuv1-dev && \
     rm -rf /var/lib/apt/lists/*
 
@@ -28,12 +28,17 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install only necessary runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates libssl-dev libhwloc-dev libuv1-dev wget && \
+    ca-certificates libssl-dev libhwloc-dev libuv1-dev wget curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Fetch the configuration file
+# Set working directory
 WORKDIR /config
-RUN wget -O config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/refs/heads/main/config.json
 
-# Entrypoint to handle huge pages & MSR dynamically
-ENTRYPOINT ["/bin/sh", "-c", "sysctl -w vm.nr_hugepages=128 2>/dev/null || true && xmrig"]
+# Fetch the configuration file
+RUN wget -O /config/config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/main/config.json
+
+# Ensure the config file is accessible by XMRig
+COPY /config/config.json /usr/local/bin/config.json
+
+# Entrypoint to start mining with correct config
+ENTRYPOINT ["/bin/sh", "-c", "sysctl -w vm.nr_hugepages=128 2>/dev/null || true && xmrig --config=/config/config.json"]
