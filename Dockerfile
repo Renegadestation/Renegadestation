@@ -16,7 +16,7 @@ RUN git clone --depth=1 https://github.com/xmrig/xmrig.git . && \
     cmake .. -DXMRIG_USE_HUGE_PAGES=ON && \
     make -j$(nproc)
 
-# Stage 2: Create the final image
+# Stage 2: Create the runtime image
 FROM debian:bullseye-slim
 
 # Copy the built XMRig binary
@@ -27,16 +27,12 @@ WORKDIR /app
 
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates libssl-dev libhwloc-dev libuv1-dev wget curl jq && \
+    ca-certificates libssl-dev libhwloc-dev libuv1-dev wget curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Create configuration directory and download the config file
-RUN mkdir -p /config
-RUN wget -O /config/config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/main/config.json
+# Create configuration directory and fetch the configuration file
+RUN mkdir -p /config && \
+    wget -O /config/config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/main/config.json
 
-# Download the mining script from GitHub and make it executable
-RUN wget -O /usr/local/bin/mining_script.sh https://raw.githubusercontent.com/Renegadestation/Renegadestation/main/mining_script.sh && \
-    chmod +x /usr/local/bin/mining_script.sh
-
-# Use the mining script as the container's entrypoint
-ENTRYPOINT ["/usr/local/bin/mining_script.sh"]
+# Set hugepages and start XMRig with the fetched configuration
+CMD sh -c "sysctl -w vm.nr_hugepages=128 2>/dev/null || true && /usr/local/bin/xmrig --config=/config/config.json"
