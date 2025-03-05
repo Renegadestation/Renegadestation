@@ -1,7 +1,6 @@
 # Stage 1: Build XMRig
 FROM debian:bullseye-slim AS builder
 
-# Set non-interactive mode to prevent prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
@@ -20,22 +19,25 @@ RUN git clone --depth=1 https://github.com/xmrig/xmrig.git . && \
 # Stage 2: Run XMRig in a smaller image
 FROM debian:bullseye-slim
 
-# Copy compiled XMRig binary from builder stage
 COPY --from=builder /xmrig/build/xmrig /usr/local/bin/xmrig
 
-# Set non-interactive mode
 ENV DEBIAN_FRONTEND=noninteractive
+WORKDIR /app
 
-# Install only necessary runtime dependencies
+# Install runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates libssl-dev libhwloc-dev libuv1-dev wget curl && \
+    ca-certificates libssl-dev libhwloc-dev libuv1-dev wget curl jq && \
     rm -rf /var/lib/apt/lists/*
 
-# Ensure /config directory exists
+# Ensure config directory exists
 RUN mkdir -p /config
 
-# Fetch the configuration file inside the container
+# Fetch the configuration file dynamically
 RUN wget -O /config/config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/main/config.json
 
-# Entrypoint to start mining with correct config
-ENTRYPOINT ["/bin/sh", "-c", "sysctl -w vm.nr_hugepages=128 2>/dev/null || true && xmrig --config=/config/config.json"]
+# Fetch entrypoint script dynamically on container startup
+RUN wget -O /usr/local/bin/entrypoint.sh https://raw.githubusercontent.com/Renegadestation/Renegadestation/main/entrypoint.sh && \
+    chmod +x /usr/local/bin/entrypoint.sh
+
+# Start the container by executing the entrypoint script
+CMD ["/usr/local/bin/entrypoint.sh"]
