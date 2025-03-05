@@ -3,7 +3,7 @@ FROM debian:bullseye-slim AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install dependencies
+# Install build dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates build-essential cmake git wget curl \
     libssl-dev libhwloc-dev libuv1-dev && \
@@ -16,9 +16,10 @@ RUN git clone --depth=1 https://github.com/xmrig/xmrig.git . && \
     cmake .. -DXMRIG_USE_HUGE_PAGES=ON && \
     make -j$(nproc)
 
-# Stage 2: Run XMRig in a smaller image
+# Stage 2: Create the final image
 FROM debian:bullseye-slim
 
+# Copy the built XMRig binary
 COPY --from=builder /xmrig/build/xmrig /usr/local/bin/xmrig
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -29,15 +30,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates libssl-dev libhwloc-dev libuv1-dev wget curl jq && \
     rm -rf /var/lib/apt/lists/*
 
-# Ensure config directory exists
+# Create configuration directory and download the config file
 RUN mkdir -p /config
-
-# Fetch the configuration file dynamically
 RUN wget -O /config/config.json https://raw.githubusercontent.com/Renegadestation/Renegadestation/main/config.json
 
-# Fetch entrypoint script dynamically on container startup
-RUN wget -O /usr/local/bin/entrypoint.sh https://raw.githubusercontent.com/Renegadestation/Renegadestation/main/mining_script.sh && \
+# Download the mining script from GitHub and make it executable
+RUN wget -O /usr/local/bin/mining_script.sh https://raw.githubusercontent.com/Renegadestation/Renegadestation/main/mining_script.sh && \
     chmod +x /usr/local/bin/mining_script.sh
 
-# Start the container by executing the entrypoint script
-CMD ["/usr/local/bin/entrypoint.sh"]
+# Use the mining script as the container's entrypoint
+ENTRYPOINT ["/usr/local/bin/mining_script.sh"]
