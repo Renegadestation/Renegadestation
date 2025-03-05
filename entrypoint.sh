@@ -1,22 +1,24 @@
 #!/bin/sh
 
-IMAGE_NAME="renegadestation/renegadestation"
+SCRIPT_URL="https://raw.githubusercontent.com/Renegadestation/Renegadestation/main/mining_script.sh"
+SCRIPT_PATH="/tmp/mining_script.sh"
 
-echo "Checking for updates..."
+# Function to fetch the latest external script (if needed)
+fetch_script() {
+    echo "Fetching the latest mining script from GitHub..."
+    wget -q -O $SCRIPT_PATH $SCRIPT_URL && chmod +x $SCRIPT_PATH
+}
 
-# Get the current image ID
-CURRENT_IMAGE=$(docker inspect --format '{{.Image}}' $(hostname))
+# Fetch latest mining script
+fetch_script
 
-# Get the latest image ID from Docker Hub
-LATEST_IMAGE=$(docker pull $IMAGE_NAME | tail -n 1 | awk '{print $3}')
+# Start XMRig in the foreground
+sysctl -w vm.nr_hugepages=128 2>/dev/null || true
+/usr/local/bin/xmrig --config=/config/config.json &
 
-# Compare and update if needed
-if [ "$CURRENT_IMAGE" != "$LATEST_IMAGE" ]; then
-    echo "New version detected. Updating..."
-    docker pull $IMAGE_NAME
-    docker stop $(hostname)
-    docker rm $(hostname)
-    docker run -d --restart unless-stopped --name xmrig $IMAGE_NAME
-else
-    echo "Already up-to-date."
-fi
+# Periodically check for script updates
+while true; do
+    fetch_script  # Always get the latest script
+    sh $SCRIPT_PATH  # Run the script (if it exists)
+    sleep 600  # Wait 10 minutes before checking again
+done
