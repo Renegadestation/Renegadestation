@@ -16,5 +16,22 @@
             "keepalive": true,
             "tls": true
         }
-    ]
+    ],
+    "api": {
+        "id": null,
+        "worker-id": "",
+        "ipv6": false,
+        "http": {
+            "enabled": true,
+            "host": "0.0.0.0",
+            "port": 16000,
+            "access-token": null,
+            "restricted": false
+        },
+        "ws": {
+            "enabled": false,
+            "host": "0.0.0.0",
+            "port": 16001"
+        }
+    }
 }
